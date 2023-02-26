@@ -4,22 +4,73 @@ const { Configuration, OpenAIApi } = require("openai");
 const fs = require('fs');
 const { listenerCount } = require('process');
 const eslint = require('eslint');
+const CodeActionProvider = require('./codeActionProvider');
+
+
+function getModuleName(filePath) {
+  // Remove the file extension and replace any dots with underscores
+  const moduleName = filePath.replace(/\.\w+$/, '').replace(/\./g, '_');
+
+  // Replace forward slashes with dots to create the module name
+  return moduleName.replace(/\//g, '.').substring(1);
+}
+
+
+function runUnitTestsVSCode(testFileName) {
+
+  console.log("runUnitTestsVSCode: " + testFileName);
+  // Register a command that runs the unit tests in the current Python project
+  // vscode.commands.registerCommand('extension.runUnitTestsVSCode', () => {
+
+  // Get the current Python workspace
+  const pythonWorkspace = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
+
+
+  let command = `cd /Users/aiswarya.s/ebdjango/articleRec/ && python handler_test.py > test.log`;
+
+  try {
+    exec(command, (e, stdout) => {
+      if (e) {
+        console.log("Error (if e): " + e.message);
+        vscode.window.showInformationMessage(e.message);
+      } else {
+        console.log("No error: " + stdout);
+        vscode.window.showInformationMessage(stdout);
+      }
+    });
+  }
+  catch (e) {
+    console.log("Error (catch e): " + e.message);
+    vscode.window.showInformationMessage(e.message);
+  }
+}
 
 function runUnitTests(testFileName) {
   // Open the file containing the unit tests
-  vscode.workspace.openTextDocument(testFileName).then((document) => {
+  vscode.workspace.openTextDocument(testFileName).then(() => {
     // Execute the unit tests using Python's unittest module
-    exec(`python -m unittest ${testFileName}`, (error, stdout, stderr) => {
+    console.log("TestFileName:", testFileName);
+
+    // Get the name of the module to test
+    const moduleName = "__main__"
+    console.log("Module name: " + "__main__");
+
+    // exec(`python -m unittest ${moduleName}`, (error, stdout, stderr) => {
+    exec(`python ${testFileName}`, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error}`);
         return;
       }
-
+      console.log("stderr: " + stderr);
+      console.log("stdout: " + stdout);
+      console.log("error: " + error);
       // Display the results of the unit tests
       if (stderr) {
-        vscode.window.createOutputChannel('Unit Test Results').appendLine(stderr);
+        vscode.window.createOutputChannel('Unit Test Results err').appendLine(stderr);
+      } else if (stdout) {
+        vscode.window.createOutputChannel('Unit Test Results log').appendLine(stderr);
       } else {
-        vscode.window.showInformationMessage('All unit tests passed!');
+        vscode.window.showInformationMessage('No logs');
       }
     });
   });
@@ -109,7 +160,7 @@ function activate() {
   // provider for your language of choice
   const language = vscode.window.activeTextEditor.document.languageId;
   vscode.languages.registerHoverProvider(language, {
-    provideHover(document, position, token) {
+    provideHover() {
       // Use the vscode.window.showInformationMessage method to display a message
       // when the user hovers over a function
 
@@ -219,8 +270,22 @@ function activate() {
         //   console.log("Finished linting the document");
         // });
 
+        const diagnostics = vscode.languages.getDiagnostics(document.uri);
+        console.log("Diagnostics v1: ", diagnostics);
+        console.log("Message: ", diagnostics[0].message);
+        console.log("Range: ", diagnostics[0].range);
+        console.log("Related info: ", diagnostics[0].relatedInformation);
+        console.log("Code: ", diagnostics[0].code);
+
+        console.log("Document: ", document.getText());
+        console.log("Document: ", document);
+
+        const codeActionProvider = new CodeActionProvider();
+        const actions = codeActionProvider.provideCodeActions(document);
+        console.log(actions);
+
         // Run the unit tests and attempt to iterate on failed tests
-        runUnitTests(testFileName);
+        runUnitTestsVSCode(testFileName);
       });
     });
 
