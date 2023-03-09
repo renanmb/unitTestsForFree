@@ -134,7 +134,7 @@ function createFileIfNotExists(filePath, language) {
 
 async function generateUnitTests(inputCode) {
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: "",
   });
   const openai = new OpenAIApi(configuration);
 
