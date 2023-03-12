@@ -23,14 +23,10 @@ function runUnitTestsVSCode(testFileName) {
   // vscode.commands.registerCommand('extension.runUnitTestsVSCode', () => {
 
   // Get the current Python workspace
-  const pythonWorkspace = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
-
-
-  let command = `cd /Users/aiswarya.s/ebdjango/articleRec/ && python handler_test.py > test.log`;
 
   try {
-    exec(command, (e, stdout) => {
-      if (e) {
+    exec(`python ${testFileName}`, (e, stdout, stderr) => {
+      if (e || stderr) {
         console.log("Error (if e): " + e.message);
         vscode.window.showInformationMessage(e.message);
       } else {
@@ -134,7 +130,7 @@ function createFileIfNotExists(filePath, language) {
 
 async function generateUnitTests(inputCode) {
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: "",
   });
   const openai = new OpenAIApi(configuration);
 
@@ -272,10 +268,12 @@ function activate() {
 
         const diagnostics = vscode.languages.getDiagnostics(document.uri);
         console.log("Diagnostics v1: ", diagnostics);
-        console.log("Message: ", diagnostics[0].message);
-        console.log("Range: ", diagnostics[0].range);
-        console.log("Related info: ", diagnostics[0].relatedInformation);
-        console.log("Code: ", diagnostics[0].code);
+        if (diagnostics.length>0){
+          console.log("Message: ", diagnostics[0].message);
+          console.log("Range: ", diagnostics[0].range);
+          console.log("Related info: ", diagnostics[0].relatedInformation);
+          console.log("Code: ", diagnostics[0].code);
+        }
 
         console.log("Document: ", document.getText());
         console.log("Document: ", document);
