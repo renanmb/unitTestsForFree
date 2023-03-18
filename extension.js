@@ -130,7 +130,7 @@ function createFileIfNotExists(filePath, language) {
 
 async function generateUnitTests(inputCode) {
   const configuration = new Configuration({
-    apiKey: "",
+    apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
 
