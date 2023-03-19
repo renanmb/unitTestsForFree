@@ -1,6 +1,8 @@
 const vscode = require('vscode');
 const { exec } = require('child_process');
-const { Configuration, OpenAIApi } = require("openai");
+// remove this into its own OpenAI class
+import { Configuration, OpenAIApi } from "openai";
+// #######################
 const fs = require('fs');
 const { listenerCount } = require('process');
 const eslint = require('eslint');
@@ -90,7 +92,7 @@ function escapeQuotations(string) {
 }
 
 function createFileIfNotExists(filePath, language) {
-
+// make a switch
   if (language == "python") {
     filePath = filePath + "_test.py";
   } else if (language == "javascript") {
@@ -130,6 +132,8 @@ function createFileIfNotExists(filePath, language) {
 
 async function generateUnitTests(inputCode) {
   const configuration = new Configuration({
+    // Organization dont solve error E401 
+    // organization: "org-DqxFGrXTMr3V9JjsXBlMEPih",
     apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
